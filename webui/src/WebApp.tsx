@@ -10,6 +10,8 @@ import { useCallback } from 'react'
 import type { ApiStatusResponse } from '../../satellite/src/apiTypes'
 import { usePoller } from './Util/usePoller'
 
+import WiFiChooser from './WiFiChooser.js'
+
 const STATUS_POLL_INTERVAL = 2000
 
 export function WebApp(): JSX.Element {
@@ -49,6 +51,10 @@ export function WebApp(): JSX.Element {
 
 						<MyErrorBoundary>
 							<SettingsForm {...restApi} includeApiEnable={false} />
+						</MyErrorBoundary>
+
+						<MyErrorBoundary>
+							<WiFiChooser />
 						</MyErrorBoundary>
 					</Col>
 				</Row>
