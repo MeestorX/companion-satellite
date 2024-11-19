@@ -53,7 +53,7 @@ fi
 
 # clone the repository
 rm -R /usr/local/src/companion-satellite &>/dev/null || true
-git clone https://github.com/bitfocus/companion-satellite.git -b $SATELLITE_BRANCH /usr/local/src/companion-satellite
+git clone https://github.com/MeestorX/companion-satellite.git -b $SATELLITE_BRANCH /usr/local/src/companion-satellite
 cd /usr/local/src/companion-satellite
 
 # configure git for future updates
