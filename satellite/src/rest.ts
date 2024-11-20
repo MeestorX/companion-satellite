@@ -9,8 +9,7 @@ import type { DeviceManager } from './devices.js'
 import type { SatelliteConfig } from './config.js'
 import { ApiConfigData, compileConfig, compileStatus, updateConfig } from './apiTypes.js'
 
-import { exec } from 'child_process'
-import util from 'util'
+import { handleWiFi } from './wifi.js'
 
 export class RestServer {
 	private readonly appConfig: Conf<SatelliteConfig>
@@ -19,8 +18,6 @@ export class RestServer {
 	private readonly app: Koa
 	private readonly router: Router
 	private server: http.Server | undefined
-
-	execPromise = util.promisify(exec)
 
 	constructor(
 		webRoot: string,
@@ -59,101 +56,9 @@ export class RestServer {
 		})
 
 		
-		// List available WiFi networks
-		this.router.get('/api/wifi/networks', async (ctx) => {
-			try {
-			  const { stdout } = await this.execPromise(
-				`nmcli -t -f SSID,SIGNAL dev wifi list`
-			  );
-		  
-			  const networks = stdout
-				.split('\n')
-				.filter((line) => line.trim() !== '' && !line.includes('IN-USE')) // Exclude empty lines and current connections
-				.map((line) => {
-				  const [ssid, strength] = line.split(':');
-				  return { ssid: ssid.trim(), strength: parseInt(strength.trim(), 10) };
-				})
-				.filter((network) => network.ssid !== '') // Exclude hidden or invalid entries
-				.reduce((uniqueNetworks, network) => {
-				  if (!uniqueNetworks.find((n) => n.ssid === network.ssid)) {
-					uniqueNetworks.push(network); // Avoid duplicate SSIDs
-				  }
-				  return uniqueNetworks;
-				}, [] as { ssid: string; strength: number }[]);
-		  
-			  ctx.body = { networks };
-			} catch (err) {
-			  console.error('Error fetching WiFi networks:', err);
-			  ctx.status = 500;
-			  ctx.body = { error: 'Failed to fetch WiFi networks' };
-			}
-		  });
-
-		//POST
-
-		// Connect to a WiFi network
-		this.router.post('/api/wifi/connect', koaBody(), async (ctx) => {
-			const ssid = ctx.request.body['ssid']
-			const password = ctx.request.body['password']
-			const hidden = ctx.request.body['hidden']
-		  
-			if (!ssid || !password) {
-			  ctx.status = 400;
-			  ctx.body = { error: 'SSID and password are required' };
-			  return;
-			}
-		  
-			try {
-			  // Remove any existing connection for this SSID to avoid conflicts
-			  await this.execPromise(`nmcli connection delete id "${ssid}" || true`);
-		  
-			  // Create a connection profile (hidden or visible is inferred by nmcli)
-			  await this.execPromise(
-				`nmcli connection add type wifi con-name "${ssid}" ssid "${ssid}"`
-			  );
-		  
-			  // Configure security settings for WPA-PSK (WiFi password)
-			  await this.execPromise(
-				`nmcli connection modify "${ssid}" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "${password}"`
-			  );
-		  
-			  // Activate the connection
-			  await this.execPromise(`nmcli connection up "${ssid}"`);
-		  
-			  ctx.body = { success: true, message: `Connected to ${ssid}` };
-			} catch (err) {
-			  ctx.status = 500;
-			  ctx.body = { error: 'Failed to connect to WiFi', details: err };
-			}
-		});
+		// Handle WiFi Functions
+		handleWiFi(this.router)
 		
-		this.router.post('/api/wifi/disconnect', koaBody(), async (ctx) => {
-			try {
-			  await this.execPromise('nmcli dev disconnect wlan0'); // Replace 'wlan0' with your WiFi interface name
-			  ctx.body = { success: true, message: 'Disconnected from WiFi' };
-			} catch (err) {
-			  ctx.status = 500;
-			  ctx.body = { error: 'Failed to disconnect from WiFi', details: err };
-			}
-		  });
-
-		this.router.post('/api/host', koaBody(), async (ctx) => {
-			let host = ''
-			if (ctx.request.type == 'application/json') {
-				host = ctx.request.body['host']
-			} else if (ctx.request.type == 'text/plain') {
-				host = ctx.request.body
-			}
-
-			if (host) {
-				this.appConfig.set('remoteIp', host)
-
-				ctx.body = 'OK'
-			} else {
-				ctx.status = 400
-				ctx.body = 'Invalid host'
-			}
-		})
 		this.router.post('/api/port', koaBody(), async (ctx) => {
 			let newPort = NaN
 			if (ctx.request.type == 'application/json') {
@@ -171,6 +76,7 @@ export class RestServer {
 				ctx.body = 'Invalid port'
 			}
 		})
+		
 		this.router.post('/api/config', koaBody(), async (ctx) => {
 			if (ctx.request.type == 'application/json') {
 				const body = ctx.request.body as Partial<ApiConfigData>
