@@ -39,17 +39,17 @@ id -u satellite &>/dev/null || adduser --disabled-password satellite --gecos ""
 
 # install fnm to manage node version
 # we do this to /opt/fnm, so that the satellite user can use the same installation
-export FNM_DIR=/opt/fnm
-echo "export FNM_DIR=/opt/fnm" >> /root/.bashrc
-curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir /opt/fnm &>/dev/null
-export PATH=/opt/fnm:$PATH
-eval "`fnm env --shell bash`"
+# export FNM_DIR=/opt/fnm
+# echo "export FNM_DIR=/opt/fnm" >> /root/.bashrc
+# curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir /opt/fnm &>/dev/null
+# export PATH=/opt/fnm:$PATH
+# eval "`fnm env --shell bash`"
 
-BUILD_BRANCH=beta
-if [ "$SATELLITE_BRANCH" == "stable" ]; then
-    BUILD_BRANCH=stable
-    SATELLITE_BRANCH=main
-fi
+# BUILD_BRANCH=beta
+# if [ "$SATELLITE_BRANCH" == "stable" ]; then
+#    BUILD_BRANCH=stable
+#    SATELLITE_BRANCH=main
+# fi
 
 # clone the repository
 rm -R /usr/local/src/companion-satellite &>/dev/null || true
@@ -60,24 +60,24 @@ cd /usr/local/src/companion-satellite
 git config --global pull.rebase false
 
 # run the update script
-./pi-image/update.sh "$BUILD_BRANCH" "$SATELLITE_BUILD"
+# ./pi-image/update.sh "$BUILD_BRANCH" "$SATELLITE_BUILD"
 
 # enable start on boot
-systemctl enable satellite
+# systemctl enable satellite
 
 # copy config file into place
-cp ./pi-image/satellite-config /boot/satellite-config
+# cp ./pi-image/satellite-config /boot/satellite-config
 
 # add the fnm node to this users path
 # TODO - verify permissions
-echo "export PATH=/opt/fnm/aliases/default/bin:\$PATH" >> /home/satellite/.bashrc
+# echo "export PATH=/opt/fnm/aliases/default/bin:\$PATH" >> /home/satellite/.bashrc
 
 # check that a build of satellite was installed
-if [ ! -d "/opt/companion-satellite" ] 
-then
-    echo "No Companion Satellite build was installed!\nIt should be possible to recover from this with \"sudo satellite-update\"" 
-    exit 9999 # die with error code 9999
-fi
+# if [ ! -d "/opt/companion-satellite" ] 
+# then
+#    echo "No Companion Satellite build was installed!\nIt should be possible to recover from this with \"sudo satellite-update\"" 
+#    exit 9999 # die with error code 9999
+# fi
 
 echo "Companion Satellite is installed!"
 echo "You can edit a subset of the configuration at \"/boot/satellite-config\" then can start it with \"sudo systemctl start satellite\" or \"sudo satellite-update\""
