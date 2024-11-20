@@ -60,8 +60,6 @@ cd /usr/local/src/companion-satellite
 git config --global pull.rebase false
 
 # build it
-yarn install
-yarn build
 
 # run the update script
 ./pi-image/update.sh
