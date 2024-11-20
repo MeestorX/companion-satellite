@@ -31,7 +31,7 @@ SATELLITE_BRANCH="${SATELLITE_BRANCH:-main}"
 # install some dependencies
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -yq git zip unzip curl libusb-1.0-0-dev libudev-dev cmake libfontconfig1 nano adduser wget
+apt-get install -yq git zip unzip curl libusb-1.0-0-dev libudev-dev cmake libfontconfig1 nano adduser wget network-manager
 apt-get clean
 
 # add a system user
