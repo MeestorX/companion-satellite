@@ -82,6 +82,8 @@ ensure_installed "wget unattended-upgrades"
 #	echo "Skipping update"
 #fi
 
+yarn install
+yarn build
 cp -r ../. /opt/.
 
 # update some tooling
