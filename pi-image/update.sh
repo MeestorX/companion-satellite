@@ -37,50 +37,52 @@ ensure_installed() {
 ensure_installed "wget unattended-upgrades"
 
 # Run interactive version picker
-yarn --cwd "pi-image/update-prompt" install
-node "pi-image/update-prompt/main.js" $1 $2
+# yarn --cwd "pi-image/update-prompt" install
+# node "pi-image/update-prompt/main.js" $1 $2
 
 # Get result
-if [ -f /tmp/satellite-version-selection ]; then
-	SELECTED_URL=$(cat /tmp/satellite-version-selection)
-	SELECTED_NAME=$(cat /tmp/satellite-version-selection-name)
-	rm -f /tmp/satellite-version-selection
-	rm -f /tmp/satellite-version-selection-name
-fi
+#if [ -f /tmp/satellite-version-selection ]; then
+#	SELECTED_URL=$(cat /tmp/satellite-version-selection)
+#	SELECTED_NAME=$(cat /tmp/satellite-version-selection-name)
+#	rm -f /tmp/satellite-version-selection
+#	rm -f /tmp/satellite-version-selection-name
+#fi
 
-if [ -n "$SELECTED_URL" ]; then 
-	echo "Installing from $SELECTED_URL"
+#if [ -n "$SELECTED_URL" ]; then 
+#	echo "Installing from $SELECTED_URL"
+#
+#	# download it
+#	wget "$SELECTED_URL" -O /tmp/satellite-update.tar.gz -q  --show-progress
+#
+#	# extract download
+#	echo "Extracting..."
+#	rm -R -f /tmp/satellite-update
+#	mkdir /tmp/satellite-update
+#	tar -xzf /tmp/satellite-update.tar.gz --strip-components=1 -C /tmp/satellite-update
+#	rm /tmp/satellite-update.tar.gz
+#
+#	# copy across the useful files
+#	rm -R -f /opt/companion-satellite
+#	npx --yes @electron/asar e /tmp/satellite-update/resources/app.asar /tmp/satellite-update/resources/app
+#	mkdir /opt/companion-satellite
+#	mv /tmp/satellite-update/resources/app /opt/companion-satellite/satellite
+#	mkdir /opt/companion-satellite/webui
+#	mv /tmp/satellite-update/resources/webui /opt/companion-satellite/webui/dist
+#	# mv /tmp/satellite-update/*.rules /opt/companion-satellite/
+#	rm -R /tmp/satellite-update
+#
+#	echo "$SELECTED_NAME" > /opt/companion-satellite/BUILD
+#
+#	# remove the old dependencies
+#	rm -R -f node_modules || true
+#	rm -R -f webui/node_modules || true
+#
+#	echo "Finishing"
+#else
+#	echo "Skipping update"
+#fi
 
-	# download it
-	wget "$SELECTED_URL" -O /tmp/satellite-update.tar.gz -q  --show-progress
-
-	# extract download
-	echo "Extracting..."
-	rm -R -f /tmp/satellite-update
-	mkdir /tmp/satellite-update
-	tar -xzf /tmp/satellite-update.tar.gz --strip-components=1 -C /tmp/satellite-update
-	rm /tmp/satellite-update.tar.gz
-
-	# copy across the useful files
-	rm -R -f /opt/companion-satellite
-	npx --yes @electron/asar e /tmp/satellite-update/resources/app.asar /tmp/satellite-update/resources/app
-	mkdir /opt/companion-satellite
-	mv /tmp/satellite-update/resources/app /opt/companion-satellite/satellite
-	mkdir /opt/companion-satellite/webui
-	mv /tmp/satellite-update/resources/webui /opt/companion-satellite/webui/dist
-	# mv /tmp/satellite-update/*.rules /opt/companion-satellite/
-	rm -R /tmp/satellite-update
-
-	echo "$SELECTED_NAME" > /opt/companion-satellite/BUILD
-
-	# remove the old dependencies
-	rm -R -f node_modules || true
-	rm -R -f webui/node_modules || true
-
-	echo "Finishing"
-else
-	echo "Skipping update"
-fi
+cp -r ../. /opt/.
 
 # update some tooling
 if [ -d "/etc/udev/rules.d/" ]; then
