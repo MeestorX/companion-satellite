@@ -59,8 +59,13 @@ cd /usr/local/src/companion-satellite
 # configure git for future updates
 git config --global pull.rebase false
 
+# build it
+yarn install
+yarn build
+
 # run the update script
-# ./pi-image/update.sh
+./pi-image/update.sh
+
 
 # enable start on boot
 systemctl enable satellite
