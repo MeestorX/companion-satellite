@@ -1,4 +1,5 @@
 import type { ApiStatusResponse } from '../../satellite/src/apiTypes'
+import { Card } from 'react-bootstrap'
 
 interface ConnectionStatusProps {
 	status: ApiStatusResponse | undefined
@@ -8,9 +9,13 @@ interface ConnectionStatusProps {
 export function ConnectionStatus({ status, error }: ConnectionStatusProps): JSX.Element {
 	return (
 		<>
-			<h3>Status</h3>
+		<Card className="mt-3 connect-status">
+			<Card.Body>
+				<h3>Status</h3>
 
-			{status ? <ConnectionStatusData status={status} /> : <p>Unknown status {error?.toString() ?? ''}</p>}
+				{status ? <ConnectionStatusData status={status} /> : <p>Unknown status {error?.toString() ?? ''}</p>}
+			</Card.Body>
+		</Card>
 		</>
 	)
 }

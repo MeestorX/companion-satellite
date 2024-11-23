@@ -1,5 +1,4 @@
-import Button from 'react-bootstrap/Button'
-import Form from 'react-bootstrap/Form'
+import { Button, Form, Card } from 'react-bootstrap'
 import type { ApiConfigData } from '../../satellite/src/apiTypes'
 import { useCallback, useMemo, useState } from 'react'
 import { SaveApiConfigData } from './Api/types'
@@ -34,6 +33,8 @@ export function SettingsForm({
 
 	return (
 		<>
+		<Card className="mt-3 settings-form">
+		<Card.Body>
 			<h3>Settings</h3>
 			{loadError ? <p>{loadError.toString()}</p> : ''}
 
@@ -48,6 +49,8 @@ export function SettingsForm({
 			)}
 
 			{!fullModifiedConfig && !loadError && 'Loading...'}
+		</Card.Body>
+		</Card>
 		</>
 	)
 }
@@ -144,6 +147,7 @@ function SettingsFormInner({
 	)
 
 	return (
+
 		<Form onSubmit={saveConfigFull}>
 			<legend>Companion Connection</legend>
 
@@ -217,5 +221,6 @@ function SettingsFormInner({
 				Save
 			</Button>
 		</Form>
+
 	)
 }
