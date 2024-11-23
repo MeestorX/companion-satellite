@@ -59,11 +59,8 @@ cd /usr/local/src/companion-satellite
 # configure git for future updates
 git config --global pull.rebase false
 
-# build it
-
 # run the update script
 ./pi-image/update.sh
-
 
 # enable start on boot
 systemctl enable satellite
@@ -76,13 +73,12 @@ cp ./pi-image/satellite-config /boot/satellite-config
 echo "export PATH=/opt/fnm/aliases/default/bin:\$PATH" >> /home/satellite/.bashrc
 
 # check that a build of satellite was installed
-if [ ! -d "/opt/companion-satellite" ] 
-then
-    echo "No Companion Satellite build was installed!\\nIt should be possible to recover from this with \"sudo satellite-update\"" 
-    exit 9999 # die with error code 9999
-fi
+# if [ ! -d "/opt/companion-satellite" ] 
+# then
+#    echo "No Companion Satellite build was installed!\\nIt should be possible to recover from this with \"sudo satellite-update\"" 
+#    exit 9999 # die with error code 9999
+# fi
 
 echo "Companion Satellite is installed!"
 echo "You can edit a subset of the configuration at \"/boot/satellite-config\" then can start it with \"sudo systemctl start satellite\" or \"sudo satellite-update\""
 echo "A http server will be started on port 9999 which gives access to the full configuration"
-
