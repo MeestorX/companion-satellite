@@ -89,7 +89,7 @@ export function handleWiFi(router: Router) {
 			ctx.status = 500;
 			ctx.body = { error: 'Failed to connect to WiFi', details: err }
 		}
-	});
+	})
 
 	// Disconnect from a WiFi network
 	router.post('/api/wifi/disconnect', koaBody(), async (ctx) => {
