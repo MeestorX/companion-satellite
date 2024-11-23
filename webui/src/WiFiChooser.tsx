@@ -165,7 +165,7 @@ const WiFiChooser: React.FC = () => {
             <Button
               variant="primary"
               onClick={connectToWiFi}
-              disabled={loading || (!selectedSSID && !manualSSID)}
+              disabled={loading || (!selectedSSID && !manualSSID) || !!connectedSSID}
             >
               Connect
             </Button>
