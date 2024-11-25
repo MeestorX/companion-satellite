@@ -34,7 +34,7 @@ apt-get update
 apt-get install -yq git zip unzip curl libusb-1.0-0-dev libudev-dev cmake libfontconfig1 nano adduser wget network-manager
 apt-get clean
 
-# add a system user
+# add a satellite user
 id -u satellite &>/dev/null || adduser --disabled-password satellite netdev --gecos ""
 
 # install fnm to manage node version
