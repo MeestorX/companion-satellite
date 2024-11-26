@@ -34,8 +34,9 @@ apt-get update
 apt-get install -yq git zip unzip curl libusb-1.0-0-dev libudev-dev cmake libfontconfig1 nano adduser wget network-manager
 apt-get clean
 
-# add a satellite user
-id -u satellite &>/dev/null || adduser --disabled-password satellite --gecos "" netdev
+# add a satellite user and add them to the "netdev" group for nmcli
+id -u satellite &>/dev/null || adduser --disabled-password satellite --gecos ""
+adduser satellite netdev
 
 # install fnm to manage node version
 # we do this to /opt/fnm, so that the satellite user can use the same installation
