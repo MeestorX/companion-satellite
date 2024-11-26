@@ -61,7 +61,7 @@ cd /usr/local/src/companion-satellite
 git config --global pull.rebase false
 
 # run the update script
-echo "\nRunning update script..."
+echo -e "\nRunning update script..."
 ./pi-image/update.sh
 
 # enable start on boot
@@ -81,6 +81,6 @@ echo "export PATH=/opt/fnm/aliases/default/bin:\$PATH" >> /home/satellite/.bashr
 #    exit 9999 # die with error code 9999
 # fi
 
-echo "Companion Satellite is installed!"
+echo -e "\nCompanion Satellite is installed!"
 echo "You can edit a subset of the configuration at \"/boot/satellite-config\" then can start it with \"sudo systemctl start satellite\" or \"sudo satellite-update\""
 echo "A http server will be started on port 9999 which gives access to the full configuration"
