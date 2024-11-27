@@ -83,8 +83,13 @@ ensure_installed "wget unattended-upgrades"
 #fi
 
 # build it!
+echo -e "\Running yarn install..."
 yarn install
+echo -e "\nRunning yarn build..."
 yarn build
+echo -e "\nCleaning up the cache..."
+yarn cache clean --all
+echo -e "\nFinished yarn stuff...\n"
 
 # update some tooling
 if [ -d "/etc/udev/rules.d/" ]; then
