@@ -1,9 +1,12 @@
 #!/bin/bash -e
 
+echo -e "\nStarting update..."
+
 # this is the bulk of the update script
 # It is a separate file, so that the freshly cloned copy is invoked, not the old copy
 
 # fail if this happens, to avoid breaking existing arm installations
+echo -e "\nChecking architecture..."
 CURRENT_ARCH=$(dpkg --print-architecture)
 if [[ "$CURRENT_ARCH" != "x64" && "$CURRENT_ARCH" != "amd64" && "$CURRENT_ARCH" != "arm64" ]]; then
 	echo "$CURRENT_ARCH is not a supported cpu architecture for running Companion Satellite."
@@ -16,6 +19,7 @@ fi
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # imitiate the fnm setup done in .bashrc
+echo -e "\nSetting fnm path..."
 export FNM_DIR=/opt/fnm
 export PATH=/opt/fnm:$PATH
 eval "`fnm env`"
@@ -23,11 +27,13 @@ eval "`fnm env`"
 cd /usr/local/src/companion-satellite
 
 # update the node version
+echo -e "\nUpdating Node version..."
 fnm use --install-if-missing
 fnm default $(fnm current)
 corepack enable
 
 # ensure some dependencies are installed
+echo -e "\nChecking for dependencies..."
 ensure_installed() {
   if ! dpkg --verify "$1" 2>/dev/null; then
 	# Future: batch the installs, if there are multiple
@@ -83,7 +89,7 @@ ensure_installed "wget unattended-upgrades"
 #fi
 
 # build it!
-echo -e "\Running yarn install..."
+echo -e "\nRunning yarn install..."
 yarn install
 echo -e "\nRunning yarn build..."
 yarn build
@@ -92,15 +98,18 @@ yarn cache clean --all
 echo -e "\nFinished yarn stuff...\n"
 
 # update some tooling
+echo -e "\nUpdate tooling..."
 if [ -d "/etc/udev/rules.d/" ]; then
 	cp satellite/assets/linux/50-satellite.rules /etc/udev/rules.d/
 	udevadm control --reload-rules || true
 fi
 
 # update startup script
+echo -e "\nUpdating startup script..."
 cp pi-image/satellite.service /etc/systemd/system
 
 # ADD REST_PORT to old config files
+echo -e "\nAdding REST_PORT to old config file"
 if [ -f /boot/satellite-config ]; then
 	if grep -q REST_PORT /boot/satellite-config; then
 	echo "config ok"
@@ -112,9 +121,11 @@ if [ -f /boot/satellite-config ]; then
 	chmod 666 /boot/satellite-config
 fi
 
+echo -e "\nReloading daemon..."
 systemctl daemon-reload
 
 # install some scripts
+echo -e "\nAdding scripts and motd"
 ln -s -f /usr/local/src/companion-satellite/pi-image/satellite-license /usr/local/bin/satellite-license
 ln -s -f /usr/local/src/companion-satellite/pi-image/satellite-help /usr/local/bin/satellite-help
 ln -s -f /usr/local/src/companion-satellite/pi-image/satellite-update /usr/local/sbin/satellite-update
@@ -122,3 +133,5 @@ ln -s -f /usr/local/src/companion-satellite/pi-image/satellite-edit-config /usr/
 
 # install the motd
 ln -s -f /usr/local/src/companion-satellite/pi-image/motd /etc/motd 
+
+echo -e "\nDONE Update!\n"
