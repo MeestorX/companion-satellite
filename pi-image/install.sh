@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env bash -e
 
 if [ ! "$BASH_VERSION" ] ; then
     echo "You must use bash to run this script. If running this script from curl, make sure the final word is 'bash'" 1>&2
