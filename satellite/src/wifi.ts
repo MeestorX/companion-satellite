@@ -126,20 +126,22 @@ export function handleWiFi(router: Router): void {
 		}
 	})
 
+	const wired = 'Wireless connection 1' // default name of wired connection with Network Manager
+
 	// Fetch Wired Network Status
 	router.get('/api/wired/status', async (ctx) => {
 		try {
-			const { stdout: modeOutput } = await execPromise('nmcli -t -f ipv4.method con show wired')
+			const { stdout: modeOutput } = await execPromise(`nmcli -t -f ipv4.method con show ${wired}`)
 			let mode = modeOutput.split(':')[1]?.trim()
 			mode = mode === 'manual' ? 'static' : mode === 'auto' ? 'dhcp' : mode
 
-			const { stdout: ipOutput } = await execPromise('nmcli -t -f IP4.ADDRESS con show wired')
+			const { stdout: ipOutput } = await execPromise(`nmcli -t -f IP4.ADDRESS con show ${wired}`)
 			const ipLine = ipOutput.split('\n')[0]
 			const ip = ipLine.split('/')[0]?.split(':')[1]?.trim() || ''
 			const cidr = ipLine.split('/')[1]?.trim() || ''
 			const subnetMask = cidrToNetmask(cidr)
 
-			const { stdout: gatewayOutput } = await execPromise('nmcli -t -f IP4.GATEWAY con show wired')
+			const { stdout: gatewayOutput } = await execPromise(`nmcli -t -f IP4.GATEWAY con show ${wired}`)
 			const gateway = gatewayOutput.split(':')[1]?.trim() || ''
 
 			ctx.body = {
@@ -168,18 +170,19 @@ export function handleWiFi(router: Router): void {
 			const cidr = netmaskToCIDR(subnetMask)
 			const subnet = `${staticIp}/${cidr}`
 			// Remove any existing connection for this network to avoid conflicts
-			await execPromise('nmcli con delete id wired || true')
+			// await execPromise(`nmcli con delete id ${wired} || true`)
 
 			// Create a connection profile
-			await execPromise('nmcli con add type ethernet con-name wired')
+			// await execPromise(`nmcli con add type ethernet con-name ${wired}`)
+
 			if (mode === 'static') {
-				await execPromise(`nmcli con mod wired ipv4.addresses ${subnet}`)
-				await execPromise(`nmcli con mod wired ipv4.gateway ${gateway}`)
+				await execPromise(`nmcli con mod ${wired} ipv4.addresses ${subnet}`)
+				await execPromise(`nmcli con mod ${wired} ipv4.gateway ${gateway}`)
 			}
-			await execPromise(`nmcli con mod wired ipv4.method ${mode === 'static' ? 'manual' : 'auto'}`)
+			await execPromise(`nmcli con mod ${wired} ipv4.method ${mode === 'static' ? 'manual' : 'auto'}`)
 
 			// Activate the connection
-			await execPromise('nmcli con up wired')
+			await execPromise('nmcli con up ${wired}')
 
 			ctx.body = { success: true, message: 'Wired network configured successfully' }
 		} catch (err: object | any) {
