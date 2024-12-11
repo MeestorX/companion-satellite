@@ -83,7 +83,7 @@ ensure_installed "wget unattended-upgrades"
 #fi
 
 # build it!
-echo -e "\Running yarn install..."
+echo -e "\nRunning yarn install..."
 yarn install
 echo -e "\nRunning yarn build..."
 yarn build
