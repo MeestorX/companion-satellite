@@ -3,4 +3,5 @@
         "satellite",
         "webui",
     ],
+    "print.colourScheme": "Visual Studio",
 }
