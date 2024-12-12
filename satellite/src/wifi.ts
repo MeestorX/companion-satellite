@@ -126,7 +126,7 @@ export function handleWiFi(router: Router): void {
 		}
 	})
 
-	const wired = 'Wireless connection 1' // default name of wired connection with Network Manager
+	const wired = 'Wired connection 1' // default name of wired connection with Network Manager
 
 	// Fetch Wired Network Status
 	router.get('/api/wired/status', async (ctx) => {
