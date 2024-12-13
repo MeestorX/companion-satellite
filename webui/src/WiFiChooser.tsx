@@ -140,10 +140,13 @@ const WiFiChooser: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchNetworks();
-    fetchConnectedSSID();
-    fetchWiredStatus();
-  }, []);
+    if (key === 'wifi') {
+      fetchNetworks();
+      fetchConnectedSSID();
+    } else if (key === 'wired') {
+      fetchWiredStatus();
+    }
+  }, [key]);
 
   return (
     <Card className="mt-3 wifi-chooser">
