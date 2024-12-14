@@ -1,152 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Form, Spinner, Alert, Row, Col, Card, Tabs, Tab } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react'
+import { Button, Form, Spinner, Alert, Row, Col, Card, Tabs, Tab } from 'react-bootstrap'
 
 interface WiFiNetwork {
-  ssid: string;
-  strength: number;
+  ssid: string
+  strength: number
+}
+
+interface restResponse {
+  ok: boolean
+  data: any
 }
 
 let connectedIp = ''
 
 const WiFiChooser: React.FC = () => {
-  const [networks, setNetworks] = useState<WiFiNetwork[]>([]);
-  const [selectedSSID, setSelectedSSID] = useState<string>('');
-  const [manualSSID, setManualSSID] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [connectedSSID, setConnectedSSID] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [key, setKey] = useState<string>('wifi');
+  const [networks, setNetworks] = useState<WiFiNetwork[]>([])
+  const [selectedSSID, setSelectedSSID] = useState<string>('')
+  const [manualSSID, setManualSSID] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [connectedSSID, setConnectedSSID] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [key, setKey] = useState<string>('wifi')
 
   // Wired Network Configuration State
-  const [ipMode, setIpMode] = useState<'dhcp' | 'static'>('dhcp');
-  const [staticIp, setStaticIp] = useState<string>('');
-  const [subnetMask, setSubnetMask] = useState<string>('');
-  const [gateway, setGateway] = useState<string>('');
+  const [ipMode, setIpMode] = useState<'dhcp' | 'static'>('dhcp')
+  const [staticIp, setStaticIp] = useState<string>('')
+  const [subnetMask, setSubnetMask] = useState<string>('')
+  const [gateway, setGateway] = useState<string>('')
 
-  const fetchNetworks = async () => {
-    setLoading(true);
-    setErrorMessage(null);
+  const callRest = async(url: string, header?: RequestInit): Promise<restResponse> => {
+    setErrorMessage(null)
+    var response: restResponse = {ok: false, data: null}
     try {
-      const response = await fetch('/api/wifi/networks');
-      const data = await response.json();
-      const availableNetworks = data.networks || [];
-      setNetworks(availableNetworks);
-      if (availableNetworks.length > 0 && !manualSSID) {
-        setSelectedSSID(connectedSSID || '');
+      const res = await fetch(url, header)
+      response.data = await res.json()
+      response.ok = res.ok
+      if (!response.ok) {
+        let details = response.data?.details ? `<p>${response.data?.details}</p>` : ''
+        setErrorMessage(`${response.data?.error || 'Unknown error'}${details}`)
       }
-    } catch (err) {
-      setErrorMessage('Failed to fetch WiFi networks!');
-    } finally {
-      setLoading(false);
+    } catch(err) {
+      setErrorMessage(`Error contacting satellite. Details: ${err}`)
     }
-  };
+    return response
+  }
 
-  const fetchConnectedSSID = async () => {
-    try {
-      const response = await fetch('/api/wifi/status');
-      const data = await response.json();
-      setConnectedSSID(data.ssid || null);
-    } catch (err) {
-      setErrorMessage('Failed to fetch connection status!');
-      setConnectedSSID(null);
+  const fetchConnectedSSID = async (): Promise<void> => {
+      const res = await callRest('/api/wifi/status')
+      if (res.ok) {
+        setConnectedSSID(res.data?.ssid || null)
+      } else {
+        setConnectedSSID(null)
+      }
+  }
+   
+  const fetchNetworks = async (): Promise<void> => {
+    setLoading(true);
+    const res = await callRest('/api/wifi/networks')
+    if (res.ok) {
+      const availableNetworks = res.data?.networks || []
+      setNetworks(availableNetworks)
+      if (availableNetworks.length > 0 && !manualSSID) {
+        setSelectedSSID(connectedSSID || '')
+      }
     }
-  };
+    setLoading(false)
+  }
 
   const connectToWiFi = async () => {
-    setLoading(true);
+    setLoading(true)
     setConnectedSSID(null)
-    setErrorMessage(null);
-    const ssidToConnect = manualSSID || selectedSSID;
-    try {
-      const response = await fetch('/api/wifi/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ssid: ssidToConnect, password: password }),
-      });
-      if (response.ok) {
-        setConnectedSSID(ssidToConnect);
-        setErrorMessage(null);
-      } else {
-        const errorData = await response.json();
-        setErrorMessage(`${errorData.error || 'Unknown error'}: ${errorData.details || ''}`);
-      }
-    } catch (error) {
-      setErrorMessage('Failed to connect to WiFi!');
-    } finally {
-      setLoading(false);
+    const ssidToConnect = selectedSSID || manualSSID
+    const res = await callRest('/api/wifi/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ssid: ssidToConnect, password: password }),
+    })
+    if (res.ok) {
+      setConnectedSSID(ssidToConnect)
     }
-  };
+    setLoading(false)
+  }
 
   const disconnectFromWiFi = async () => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const response = await fetch('/api/wifi/disconnect', {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setConnectedSSID(null);
-        setErrorMessage(null);
-      } else {
-        const errorData = await response.json();
-        setErrorMessage(`Failed to disconnect: ${errorData.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      setErrorMessage('Failed to disconnect from WiFi!');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLoading(true)
+    const res = await callRest('/api/wifi/disconnect', {
+      method: 'POST',
+    })
+    if (res.ok) {
+      setConnectedSSID(null)
+    } 
+    setLoading(false)
+  }
 
   const fetchWiredStatus = async () => {
-    try {
-      const response = await fetch('/api/wired/status');
-      const data = await response.json();
-      connectedIp = data.ip
-      setIpMode(data.mode || '');
-      setStaticIp(data.ip || '');
-      setSubnetMask(data.subnetMask || '');
-      setGateway(data.gateway || '');
-    } catch (err) {
-      setErrorMessage('Failed to fetch wired network status!');
+    const res = await callRest('/api/wired/status');
+    if (res.ok) {
+      connectedIp = res.data?.ip
+      setIpMode(res.data?.mode || '')
+      setStaticIp(res.data?.ip || '')
+      setSubnetMask(res.data?.subnetMask || '')
+      setGateway(res.data?.gateway || '')
     }
-  };
+  }
 
   const configureWiredNetwork = async () => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const response = await fetch('/api/wired/configure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: ipMode,
-          staticIp,
-          subnetMask,
-          gateway,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        setErrorMessage(`${errorData.error || 'Unknown error'}:\n${errorData.details || ''}`);
-      }
-    } catch (error) {
-      setErrorMessage('Failed to configure wired network.');
-    } finally {
-      fetchWiredStatus()
-      setLoading(false);
-    }
-  };
+    await callRest('/api/wired/configure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: ipMode,
+        staticIp,
+        subnetMask,
+        gateway,
+      }),
+    })
+    fetchWiredStatus()
+  }
 
   useEffect(() => {
     if (key === 'wifi') {
-      fetchNetworks();
       fetchConnectedSSID();
-    } else if (key === 'wired') {
-      fetchWiredStatus();
+      fetchNetworks();
+     } else if (key === 'wired') {
+      fetchWiredStatus()
     }
-  }, [key]);
+  }, [key])
 
   return (
     <Card className="mt-3 wifi-chooser">
@@ -175,6 +155,7 @@ const WiFiChooser: React.FC = () => {
                 onChange={(e) => setSelectedSSID(e.target.value)}
                 disabled={loading}
               >
+                <option key='hidden' value=''>- Hidden Network -</option>
                 {networks.length > 0 ? (
                   networks.map((network) => (
                     <option key={network.ssid} value={network.ssid}>
@@ -186,16 +167,18 @@ const WiFiChooser: React.FC = () => {
                 )}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Enter SSID (for hidden networks)</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Hidden network SSID"
-                value={manualSSID}
-                onChange={(e) => setManualSSID(e.target.value)}
-                disabled={loading}
-              />
-            </Form.Group>
+            {!selectedSSID && (
+              <Form.Group className="mb-3">
+                <Form.Label>Enter SSID (for hidden network)</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Hidden network SSID"
+                  value={manualSSID}
+                  onChange={(e) => setManualSSID(e.target.value)}
+                  disabled={loading}
+                />
+              </Form.Group>
+            )}
             <Form.Group className="mb-3">
               <Form.Label>WiFi Password</Form.Label>
               <Form.Control

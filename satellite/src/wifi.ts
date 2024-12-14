@@ -52,9 +52,10 @@ export function handleWiFi(router: Router): void {
 				)
 
 			ctx.body = { networks }
-		} catch (err) {
+		} catch (err: object | any) {
 			ctx.status = 500
-			ctx.body = { error: 'Failed to fetch WiFi networks', details: err }
+			let details = err?.stderr.trim()
+			ctx.body = { error: 'Failed to fetch WiFi networks', details: details }
 		}
 	})
 
@@ -75,9 +76,10 @@ export function handleWiFi(router: Router): void {
 			} else {
 				ctx.body = { ssid: null } // No active connection
 			}
-		} catch (err) {
+		} catch (err: object | any) {
 			ctx.status = 500
-			ctx.body = { error: 'Failed to fetch WiFi status', details: err }
+			let details = err?.stderr.trim()
+			ctx.body = { error: 'Failed to fetch WiFi status', details: details }
 		}
 	})
 
@@ -120,9 +122,10 @@ export function handleWiFi(router: Router): void {
 		try {
 			await execPromise('nmcli dev disconnect wlan0') // Replace 'wlan0' with your WiFi interface name
 			ctx.body = { success: true, message: 'Disconnected from WiFi' }
-		} catch (err) {
+		} catch (err: object | any) {
 			ctx.status = 500
-			ctx.body = { error: 'Failed to disconnect from WiFi', details: err }
+			let details = err?.stderr.trim()
+			ctx.body = { error: 'Failed to disconnect from WiFi', details: details }
 		}
 	})
 
@@ -150,9 +153,10 @@ export function handleWiFi(router: Router): void {
 				gateway,
 				subnetMask,
 			}
-		} catch (err) {
+		} catch (err: object | any) {
 			ctx.status = 500
-			ctx.body = { error: 'Failed to fetch wired network status', details: err }
+			let details = err?.stderr.trim()
+			ctx.body = { error: 'Failed to fetch wired network status', details: details }
 		}
 	})
 
