@@ -37,8 +37,8 @@ const WiFiChooser: React.FC = () => {
       response.data = await res.json()
       response.ok = res.ok
       if (!response.ok) {
-        let details = response.data?.details ? `<p>${response.data?.details}</p>` : ''
-        setErrorMessage(`${response.data?.error || 'Unknown error'}${details}`)
+        let details = response.data.details ? `<p>${response.data.details}</p>` : ''
+        setErrorMessage(`${response.data.error || 'Unknown error'}${details}`)
       }
     } catch(err) {
       setErrorMessage(`Error contacting satellite. Details: ${err}`)
@@ -150,15 +150,14 @@ const WiFiChooser: React.FC = () => {
             <Form.Group className="mb-3">
               <Form.Label>Select a Network</Form.Label>
               <Form.Select
-                defaultValue={connectedSSID || ''}
-                value={selectedSSID}
+               value={selectedSSID}
                 onChange={(e) => setSelectedSSID(e.target.value)}
                 disabled={loading}
               >
                 <option key='hidden' value=''>- Hidden Network -</option>
                 {networks.length > 0 ? (
                   networks.map((network) => (
-                    <option key={network.ssid} value={network.ssid}>
+                    <option key={network.ssid} value={network.ssid} selected={network.ssid === connectedSSID}>
                       {network.ssid} ({network.strength}%)
                     </option>
                   ))
